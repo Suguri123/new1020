@@ -304,6 +304,50 @@
       border-radius: 999px;
     }
 
+    .firebase-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background-color: var(--accent-green-light);
+      color: var(--accent-green-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .firebase-config-box {
+      display: none;
+      background-color: var(--surface-color);
+      border: 1px dashed var(--accent-green);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .firebase-config-box.open {
+      display: flex;
+    }
+
+    .firebase-url-input {
+      flex: 1;
+      min-width: 240px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+    }
+
     .comment-form {
       background-color: var(--surface-color);
       border: 1px solid var(--border-color);
@@ -578,6 +622,28 @@
           방문자 한마디
           <span class="comment-count-badge" id="commentCount">0</span>
         </h2>
+        <button type="button" class="btn" id="firebaseSettingBtn">
+          🔗 파이어베이스 주소 확인/변경
+        </button>
+      </div>
+
+      <div class="firebase-status-bar">
+        <span id="firebaseStatusText">☁️ 파이어베이스(new1020) 연결 확인 중...</span>
+        <button type="button" class="btn" id="refreshCommentsBtn" style="padding: 4px 10px; font-size: 0.82rem;">
+          🔄 새로고침
+        </button>
+      </div>
+
+      <div class="firebase-config-box" id="firebaseConfigBox">
+        <input
+          type="text"
+          id="firebaseUrlInput"
+          class="firebase-url-input"
+          placeholder="예: https://new1020-b3d42-default-rtdb.firebaseio.com"
+        />
+        <button type="button" class="comment-submit-btn" id="saveFirebaseUrlBtn" style="padding: 8px 14px; font-size: 0.88rem;">
+          적용
+        </button>
       </div>
 
       <form class="comment-form" id="commentForm">
@@ -648,24 +714,74 @@
       });
     });
 
-    // 방문자 댓글(방명록) 기능 (브라우저 localStorage에 저장)
+    // 방문자 댓글(방명록) 기능: 파이어베이스(new1020) 실시간 연동 + localStorage 보조 저장
     const STORAGE_KEY = "hyunsuk_guestbook_comments";
+    const FIREBASE_URL_STORAGE_KEY = "hyunsuk_firebase_db_url_v2";
+    // 기본값으로 new1020-b3d42 프로젝트의 Realtime Database 주소를 사용합니다.
+    const DEFAULT_FIREBASE_DB_URL = "https://new1020-b3d42-default-rtdb.firebaseio.com";
+
     const commentForm = document.getElementById("commentForm");
     const commentAuthor = document.getElementById("commentAuthor");
     const commentContent = document.getElementById("commentContent");
     const commentList = document.getElementById("commentList");
     const commentCount = document.getElementById("commentCount");
+    const firebaseStatusText = document.getElementById("firebaseStatusText");
+    const firebaseSettingBtn = document.getElementById("firebaseSettingBtn");
+    const firebaseConfigBox = document.getElementById("firebaseConfigBox");
+    const firebaseUrlInput = document.getElementById("firebaseUrlInput");
+    const saveFirebaseUrlBtn = document.getElementById("saveFirebaseUrlBtn");
+    const refreshCommentsBtn = document.getElementById("refreshCommentsBtn");
 
     const defaultComments = [
       {
-        id: 1,
+        id: "default-1",
         author: "초록이웃",
         text: "현숙 님 자기소개 페이지 정말 깔끔하고 산뜻하네요! 앞으로도 응원합니다 🌿",
         date: "방금 전",
       },
     ];
 
-    function loadComments() {
+    function getFirebaseBaseUrl() {
+      let url = DEFAULT_FIREBASE_DB_URL;
+      try {
+        const savedUrl = localStorage.getItem(FIREBASE_URL_STORAGE_KEY);
+        if (savedUrl && savedUrl.trim()) {
+          url = savedUrl.trim();
+        }
+      } catch {
+        // ignore
+      }
+      // 프로젝트 이름(예: new1020-a1b2c)만 입력한 경우 자동으로 주소 완성
+      if (!url.startsWith("http")) {
+        url = `https://${url.replace(/\/+$/, "")}-default-rtdb.firebaseio.com`;
+      }
+      return url.replace(/\/+$/, "");
+    }
+
+    firebaseUrlInput.value = getFirebaseBaseUrl();
+
+    firebaseSettingBtn.addEventListener("click", () => {
+      firebaseConfigBox.classList.toggle("open");
+    });
+
+    saveFirebaseUrlBtn.addEventListener("click", () => {
+      const val = firebaseUrlInput.value.trim();
+      if (!val) return;
+      try {
+        localStorage.setItem(FIREBASE_URL_STORAGE_KEY, val);
+      } catch {
+        // ignore
+      }
+      firebaseUrlInput.value = getFirebaseBaseUrl();
+      firebaseConfigBox.classList.remove("open");
+      fetchCommentsFromFirebase();
+    });
+
+    refreshCommentsBtn.addEventListener("click", () => {
+      fetchCommentsFromFirebase();
+    });
+
+    function loadLocalComments() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         return saved ? JSON.parse(saved) : defaultComments;
@@ -674,7 +790,7 @@
       }
     }
 
-    function saveComments(comments) {
+    function saveLocalComments(comments) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
       } catch {
@@ -682,7 +798,43 @@
       }
     }
 
-    let comments = loadComments();
+    let comments = loadLocalComments();
+    let isFirebaseConnected = false;
+
+    async function fetchCommentsFromFirebase() {
+      const endpoint = `${getFirebaseBaseUrl()}/comments.json`;
+      try {
+        const res = await fetch(endpoint);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        isFirebaseConnected = true;
+        firebaseStatusText.textContent = `☁️ 파이어베이스 공용 댓글 연결됨 (${getFirebaseBaseUrl()})`;
+
+        if (!data) {
+          comments = [];
+        } else {
+          comments = Object.entries(data)
+            .map(([firebaseKey, val]) => ({
+              id: firebaseKey,
+              author: val.author || "익명",
+              text: val.text || "",
+              date: val.date || "",
+              createdAt: val.createdAt || 0,
+            }))
+            .sort((a, b) => b.createdAt - a.createdAt);
+        }
+        saveLocalComments(comments);
+        renderComments();
+      } catch (err) {
+        isFirebaseConnected = false;
+        firebaseStatusText.textContent =
+          "💡 파이어베이스 프로젝트(new1020)에서 'Realtime Database 만들기(테스트 모드)'를 켜거나 정확한 주소를 입력해 주세요. (현재는 임시 저장 중)";
+        comments = loadLocalComments();
+        renderComments();
+      }
+    }
 
     function renderComments() {
       commentList.innerHTML = "";
@@ -709,9 +861,20 @@
         delBtn.type = "button";
         delBtn.className = "comment-delete-btn";
         delBtn.textContent = "삭제";
-        delBtn.addEventListener("click", () => {
+        delBtn.addEventListener("click", async () => {
+          if (isFirebaseConnected) {
+            try {
+              await fetch(`${getFirebaseBaseUrl()}/comments/${item.id}.json`, {
+                method: "DELETE",
+              });
+              await fetchCommentsFromFirebase();
+              return;
+            } catch {
+              // 실패 시 로컬에서 삭제
+            }
+          }
           comments = comments.filter((c) => c.id !== item.id);
-          saveComments(comments);
+          saveLocalComments(comments);
           renderComments();
         });
 
@@ -731,7 +894,7 @@
       });
     }
 
-    commentForm.addEventListener("submit", (e) => {
+    commentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const author = commentAuthor.value.trim();
       const text = commentContent.value.trim();
@@ -740,19 +903,42 @@
       const now = new Date();
       const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-      comments.unshift({
-        id: Date.now(),
+      const newComment = {
         author,
         text,
         date: dateStr,
+        createdAt: Date.now(),
+      };
+
+      if (isFirebaseConnected) {
+        try {
+          const res = await fetch(`${getFirebaseBaseUrl()}/comments.json`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newComment),
+          });
+          if (res.ok) {
+            commentContent.value = "";
+            await fetchCommentsFromFirebase();
+            return;
+          }
+        } catch {
+          // 파이어베이스 전송 실패 시 로컬 저장으로 폴백
+        }
+      }
+
+      comments.unshift({
+        id: String(Date.now()),
+        ...newComment,
       });
 
-      saveComments(comments);
+      saveLocalComments(comments);
       renderComments();
       commentContent.value = "";
     });
 
     renderComments();
+    fetchCommentsFromFirebase();
   </script>
 </body>
 </html>
