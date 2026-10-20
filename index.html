@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이현숙 | 자기소개 페이지</title>
+  <style>
+    :root {
+      --bg-color: #f6faf7;
+      --surface-color: #ffffff;
+      --text-primary: #1a2e22;
+      --text-secondary: #4a6353;
+      --accent-green: #16a34a;
+      --accent-green-light: #dcfce7;
+      --accent-green-dark: #15803d;
+      --border-color: #e2eee5;
+      --shadow-sm: 0 4px 12px rgba(22, 163, 74, 0.06);
+      --shadow-hover: 0 12px 24px rgba(22, 163, 74, 0.14);
+      --radius: 16px;
+    }
+
+    body.dark-mode {
+      --bg-color: #0f1912;
+      --surface-color: #18271d;
+      --text-primary: #ecfdf3;
+      --text-secondary: #a3c2ad;
+      --accent-green: #22c55e;
+      --accent-green-light: #1f3a28;
+      --accent-green-dark: #4ade80;
+      --border-color: #263e2e;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.7;
+      letter-spacing: -0.02em;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    /* 상단 컨트롤 바 */
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: var(--surface-color);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      transform: translateY(-1px);
+    }
+
+    /* 프로필(별명 & 한 줄 소개) 섹션 */
+    .hero {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: calc(var(--radius) + 4px);
+      padding: 48px 36px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent-green), #4ade80);
+    }
+
+    .avatar {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background-color: var(--accent-green-light);
+      color: var(--accent-green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      margin-bottom: 18px;
+      border: 2px solid var(--accent-green);
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: var(--accent-green-light);
+      color: var(--accent-green-dark);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .nickname {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      word-break: keep-all;
+    }
+
+    .nickname span {
+      color: var(--accent-green);
+    }
+
+    .one-liner {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      word-break: keep-all;
+    }
+
+    .edit-hint {
+      display: none;
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    body.editing .edit-hint {
+      display: block;
+    }
+
+    body.editing [contenteditable="true"] {
+      outline: 2px dashed var(--accent-green);
+      outline-offset: 4px;
+      border-radius: 6px;
+      background-color: var(--accent-green-light);
+    }
+
+    /* 관심사 섹션 */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 22px;
+      background-color: var(--accent-green);
+      border-radius: 4px;
+    }
+
+    /* 관심사 카드 그리드 (데스크톱 3열, 모바일 1열) */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-green);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background-color: var(--accent-green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+    }
+
+    .card-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+      word-break: keep-all;
+    }
+
+    .card-desc {
+      font-size: 0.98rem;
+      color: var(--text-secondary);
+      word-break: keep-all;
+      margin-bottom: 20px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+    }
+
+    .like-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .like-btn:hover,
+    .like-btn.liked {
+      background-color: var(--accent-green-light);
+      color: var(--accent-green-dark);
+    }
+
+    /* 방문자 댓글(방명록) 섹션 */
+    .comments-section {
+      margin-top: 48px;
+    }
+
+    .comment-count-badge {
+      background-color: var(--accent-green-light);
+      color: var(--accent-green-dark);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .comment-form {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .comment-form-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .comment-input,
+    .comment-textarea {
+      font-family: inherit;
+      font-size: 0.98rem;
+      color: var(--text-primary);
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .comment-input {
+      width: 220px;
+    }
+
+    .comment-textarea {
+      width: 100%;
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .comment-input:focus,
+    .comment-textarea:focus {
+      outline: none;
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+
+    .comment-submit-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .comment-submit-btn {
+      cursor: pointer;
+      border: none;
+      background-color: var(--accent-green);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 10px;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .comment-submit-btn:hover {
+      background-color: var(--accent-green-dark);
+      transform: translateY(-1px);
+    }
+
+    .comment-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .comment-item {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .comment-author {
+      font-weight: 700;
+      color: var(--accent-green-dark);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .comment-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .comment-delete-btn:hover {
+      color: #dc2626;
+      background-color: rgba(220, 38, 38, 0.08);
+    }
+
+    .comment-text {
+      font-size: 0.98rem;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-break: keep-all;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* 태블릿 및 휴대폰 반응형 설정: 휴대폰에서는 카드가 한 줄에 하나씩 표시 */
+    @media (max-width: 768px) {
+      .container {
+        padding: 28px 18px 48px;
+      }
+
+      .hero {
+        padding: 36px 22px;
+      }
+
+      .nickname {
+        font-size: 1.85rem;
+      }
+
+      .one-liner {
+        font-size: 1.05rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .comment-form-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .comment-input {
+        width: 100%;
+      }
+
+      .comment-submit-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <!-- 상단 기능 버튼 -->
+    <div class="top-bar">
+      <button type="button" class="btn" id="editToggleBtn" aria-label="내용 직접 수정하기">
+        ✏️ 내용 수정
+      </button>
+      <button type="button" class="btn" id="themeToggleBtn" aria-label="다크 모드 전환">
+        🌙 다크 모드
+      </button>
+    </div>
+
+    <!-- 이름, 별명 & 한 줄 소개 -->
+    <section class="hero" aria-label="프로필 소개">
+      <div class="avatar" aria-hidden="true">🌿</div>
+      <div>
+        <span class="badge" contenteditable="false">별명 · 초록탐험가</span>
+      </div>
+      <h1 class="nickname" id="nickname" contenteditable="false">
+        안녕하세요, <span>이현숙</span>입니다!
+      </h1>
+      <p class="one-liner" id="oneLiner" contenteditable="false">
+        작은 호기심을 코드와 기록으로 연결하며 매일 조금씩 자라나는 것을 좋아합니다.
+      </p>
+      <p class="edit-hint">💡 점선으로 표시된 글자를 클릭해 나만의 별명과 소개로 바로 바꿔 보세요!</p>
+    </section>
+
+    <!-- 관심사 카드 3개 -->
+    <section aria-labelledby="interestHeading">
+      <div class="section-header">
+        <h2 class="section-title" id="interestHeading">나의 관심사 3가지</h2>
+      </div>
+
+      <div class="card-grid">
+        <!-- 카드 1 -->
+        <article class="card">
+          <div>
+            <div class="card-icon" aria-hidden="true">🤖</div>
+            <div class="card-tag">INTEREST 01</div>
+            <h3 class="card-title" contenteditable="false">AI & 웹 메이킹</h3>
+            <p class="card-desc" contenteditable="false">
+              새로운 AI 도구와 웹 기술을 활용해 일상을 편리하게 만드는 작은 프로젝트를 직접 기획하고 구현하는 것을 즐깁니다.
+            </p>
+          </div>
+          <div class="card-footer">
+            <span>#사이드프로젝트</span>
+            <button type="button" class="like-btn" data-likes="12">
+              🌱 공감 <span class="like-count">12</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- 카드 2 -->
+        <article class="card">
+          <div>
+            <div class="card-icon" aria-hidden="true">🌲</div>
+            <div class="card-tag">INTEREST 02</div>
+            <h3 class="card-title" contenteditable="false">숲길 산책과 러닝</h3>
+            <p class="card-desc" contenteditable="false">
+              초록빛 나무가 우거진 공원을 걷거나 가볍게 달리며 머리를 비우고, 계절마다 바뀌는 자연의 풍경을 사진으로 남깁니다.
+            </p>
+          </div>
+          <div class="card-footer">
+            <span>#리프레시</span>
+            <button type="button" class="like-btn" data-likes="19">
+              🌱 공감 <span class="like-count">19</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- 카드 3 -->
+        <article class="card">
+          <div>
+            <div class="card-icon" aria-hidden="true">🍵</div>
+            <div class="card-tag">INTEREST 03</div>
+            <h3 class="card-title" contenteditable="false">독서와 영감 노트</h3>
+            <p class="card-desc" contenteditable="false">
+              따뜻한 녹차나 커피 한 잔과 함께 책을 읽고, 마음에 남는 문장이나 떠오른 아이디어를 나만의 노트에 차곡차곡 기록합니다.
+            </p>
+          </div>
+          <div class="card-footer">
+            <span>#기록습관</span>
+            <button type="button" class="like-btn" data-likes="15">
+              🌱 공감 <span class="like-count">15</span>
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 방문자 댓글(방명록) 섹션 -->
+    <section class="comments-section" aria-labelledby="commentHeading">
+      <div class="section-header">
+        <h2 class="section-title" id="commentHeading">
+          방문자 한마디
+          <span class="comment-count-badge" id="commentCount">0</span>
+        </h2>
+      </div>
+
+      <form class="comment-form" id="commentForm">
+        <div class="comment-form-row">
+          <input
+            type="text"
+            id="commentAuthor"
+            class="comment-input"
+            placeholder="이름 또는 별명 (예: 이웃집 친구)"
+            maxlength="20"
+            required
+          />
+        </div>
+        <textarea
+          id="commentContent"
+          class="comment-textarea"
+          placeholder="이현숙 님에게 반가운 인사나 응원의 댓글을 남겨 보세요!"
+          maxlength="300"
+          required
+        ></textarea>
+        <div class="comment-submit-row">
+          <button type="submit" class="comment-submit-btn">💬 댓글 등록</button>
+        </div>
+      </form>
+
+      <ul class="comment-list" id="commentList" aria-live="polite"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© <span id="currentYear"></span> 이현숙. Built with HTML, CSS &amp; JS in a single file.</p>
+  </footer>
+
+  <script>
+    // 현재 연도 표시
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+    // 다크 모드 전환
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    themeToggleBtn.addEventListener("click", () => {
+      const isDark = document.body.classList.toggle("dark-mode");
+      themeToggleBtn.textContent = isDark ? "☀️ 라이트 모드" : "🌙 다크 모드";
+    });
+
+    // 브라우저에서 바로 별명/소개/관심사 텍스트를 수정할 수 있는 편집 모드
+    const editToggleBtn = document.getElementById("editToggleBtn");
+    const editableElements = document.querySelectorAll("[contenteditable]");
+    let isEditing = false;
+
+    editToggleBtn.addEventListener("click", () => {
+      isEditing = !isEditing;
+      document.body.classList.toggle("editing", isEditing);
+      editableElements.forEach((el) => {
+        el.setAttribute("contenteditable", String(isEditing));
+      });
+      editToggleBtn.textContent = isEditing ? "✅ 수정 완료" : "✏️ 내용 수정";
+    });
+
+    // 관심사 카드 공감(좋아요) 버튼 인터랙션
+    const likeButtons = document.querySelectorAll(".like-btn");
+    likeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const countEl = btn.querySelector(".like-count");
+        let count = parseInt(countEl.textContent, 10);
+        const liked = btn.classList.toggle("liked");
+        count = liked ? count + 1 : count - 1;
+        countEl.textContent = count;
+      });
+    });
+
+    // 방문자 댓글(방명록) 기능 (브라우저 localStorage에 저장)
+    const STORAGE_KEY = "hyunsuk_guestbook_comments";
+    const commentForm = document.getElementById("commentForm");
+    const commentAuthor = document.getElementById("commentAuthor");
+    const commentContent = document.getElementById("commentContent");
+    const commentList = document.getElementById("commentList");
+    const commentCount = document.getElementById("commentCount");
+
+    const defaultComments = [
+      {
+        id: 1,
+        author: "초록이웃",
+        text: "현숙 님 자기소개 페이지 정말 깔끔하고 산뜻하네요! 앞으로도 응원합니다 🌿",
+        date: "방금 전",
+      },
+    ];
+
+    function loadComments() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : defaultComments;
+      } catch {
+        return defaultComments;
+      }
+    }
+
+    function saveComments(comments) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+      } catch {
+        // localStorage 사용 불가 환경에서도 화면에는 정상 반영
+      }
+    }
+
+    let comments = loadComments();
+
+    function renderComments() {
+      commentList.innerHTML = "";
+      commentCount.textContent = comments.length;
+
+      comments.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "comment-item";
+
+        const header = document.createElement("div");
+        header.className = "comment-header";
+
+        const authorSpan = document.createElement("span");
+        authorSpan.className = "comment-author";
+        authorSpan.textContent = `🌱 ${item.author}`;
+
+        const metaDiv = document.createElement("div");
+        metaDiv.className = "comment-meta";
+
+        const dateSpan = document.createElement("span");
+        dateSpan.textContent = item.date;
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "comment-delete-btn";
+        delBtn.textContent = "삭제";
+        delBtn.addEventListener("click", () => {
+          comments = comments.filter((c) => c.id !== item.id);
+          saveComments(comments);
+          renderComments();
+        });
+
+        metaDiv.appendChild(dateSpan);
+        metaDiv.appendChild(delBtn);
+
+        header.appendChild(authorSpan);
+        header.appendChild(metaDiv);
+
+        const textP = document.createElement("p");
+        textP.className = "comment-text";
+        textP.textContent = item.text;
+
+        li.appendChild(header);
+        li.appendChild(textP);
+        commentList.appendChild(li);
+      });
+    }
+
+    commentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const author = commentAuthor.value.trim();
+      const text = commentContent.value.trim();
+      if (!author || !text) return;
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+      comments.unshift({
+        id: Date.now(),
+        author,
+        text,
+        date: dateStr,
+      });
+
+      saveComments(comments);
+      renderComments();
+      commentContent.value = "";
+    });
+
+    renderComments();
+  </script>
+</body>
+</html>
